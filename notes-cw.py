@@ -4,6 +4,7 @@ from sys import argv
 import os
 import argparse
 import datetime
+import uuid
 import json
 
 def detection_acton(args):
@@ -23,20 +24,25 @@ def write_json(filename, data): # Запись файла json
         json.dump(data, notes_file, indent=4)
 
 def add_note(title, msg):
-    msg_id = 2
+    # msg_id = ''.join([hex(ord(c)).replace('0x','') for c in os.urandom(8)])
+    msg_id = uuid.uuid1()
+    print(msg_id)
     # now = datetime.datetime.now()
     today = datetime.datetime.today()
     msg_data = today.strftime("%Y-%m-%d %H:%M:%S")
     print(msg_data)
-    msg_add = {"id":"2", "data":msg_data, "title":"note2", "msg":"test notes"}
-    # notes_data = json.load(open("notes.json"))
-    # notes_data.appemd(msg_add)
+    msg_add = {"id":str(msg_id), "data":msg_data, "title":str(title), "msg":str(msg)}
+    # Проверка файла на существование
     if os.path.isfile("notes.json"):
-        print("Файл существует")
-        write_json("notes.json", msg_add)
+        print("Файл JSON существует")
+        with open("notes.json", 'r') as notes_file:
+            notes_data = json.load(notes_file)
+        notes_data.append(msg_add)
+        print(notes_data)
+        write_json("notes.json", notes_data)
     else:
-        print("Файл не существует")
-        data ={}
+        print("Файл JSON не существует")
+        data = []
         write_json("notes.json", data)
 
 
@@ -54,6 +60,7 @@ parser.add_argument('-t', '--title', type=str, help='Title note')
 parser.add_argument('-m', '--msg', type=str, help='Message')
 parser.add_argument('-d', '--date', type=str, help='Data')
 parser.add_argument('-r', '--remember', type=str, help='Params of Action')
+parser.add_argument('-i', '--illustrate', type=str, help='Illustrate Notion to Screen')
 args = parser.parse_args()
 print(args.action)
 if args.action == "add":
